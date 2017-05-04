@@ -1,0 +1,1 @@
+Modicamos o filtro externo e o tempo do debouncing_time
