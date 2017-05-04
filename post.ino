@@ -21,7 +21,6 @@ void postar() {
   HttpCode(httpCode);
 }
 
-
 void HttpCode(int httpCode) {
   if (httpCode == 200) {
     Serial.println(filaPulsos.count());
@@ -45,13 +44,11 @@ void pushDebug(int code_debug, String msg) {
   sprintf(dateBuffer, "%04u-%02u-%02u", year(), month(), day());
   sprintf(horaBuffer, "%02u:%02u:%02u",  hour(), minute(), second());
   jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" + "}]";
-  //
   filaErros.push(jsonDebug);
   Serial.println(jsonDebug);
   Serial.print(filaErros.count());
   //  Serial.print(" - ");
   //  Serial.println(filaErros.pop());
-  postDebug();
 }
 
 void postDebug() {

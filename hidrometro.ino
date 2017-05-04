@@ -1,37 +1,38 @@
-
+/*
+   firmware correto mesmo sim agora vai e foi mesmo para o hidrometro da ect que vai ficar mesmo de verdade... Obrigado Senhor!!!
+*/
+#include <Arduino.h>
 #include <Time.h>
 #include <TimeLib.h>
 #include <Ticker.h>
-#include<QueueList.h>
-#include<stdlib.h>
-#include<ESP8266HTTPClient.h>
-#include<ESP8266WiFi.h>
-#include <DNSServer.h>
+#include <QueueList.h>
+#include <stdlib.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>// comunica com o dns (ArduinoOTA)
+#include <DNSServer.h> // habilita servidor dns no esp (WiFiManager)
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
-
-
-#include <Arduino.h>
-
+#include <ArduinoOTA.h>
 
 QueueList<char*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
+#define uuid_dispositivo "hidrometro_ect"
 #define termino "\0"
 #define data "\"data_hora\":"
 #define aspas " "
 #define col "}"
 #define fecha   "]"
 #define tempjson 60// tempo em segundos 
-#define temppost 60*3// tempo em segundos //com 80 carac cabem 231 jsons na fila
+#define temppost 180// tempo em segundos //com 80 carac cabem 231 jsons na fila
+#define temppostdebug 3600 // 1h para postar os erros
 
-//Timer t;
 Ticker t_criar;
 Ticker t_postar;
 Ticker erros_postar;
 Ticker seta_hora;
-
 
 //para contagem de pulsos
 volatile unsigned int contador = 0;
@@ -40,18 +41,8 @@ volatile unsigned long last_micros;
 boolean state = true; //false p baixo -> pulso
 float debouncing_time = 100000;//equivale 100 milisegundos(esse tempo é em micro)
 
-//para tempo
-int ano, mes, dia, hora, minuto, seg;
-
-
-/*
-  char* ssid = "Robotica-IMD";
-  char* password = "roboticawifi";
-*/
 char dateBuffer[12];
 char horaBuffer[12];
-//char uuid_dispositivo[38] = "3552df5ba4814cf6990aa521f1720f3a";
-char uuid_dispositivo[100] = "salarobotica";
 
 //flag
 volatile bool post_it = false;
@@ -61,7 +52,7 @@ volatile bool flag_n_postou = false;
 bool setInterrupt = true;
 bool desconectado;
 bool enchendoFilaPulsos = true;
-bool enchendoFilaDebug = true;
+bool enchendoFilaDebug = false;
 bool sincroHora = false;
 
 //ip to string
@@ -70,28 +61,19 @@ String statusesp;
 
 void setup()
 {
- 
-
   pinMode(LED_BUILTIN, OUTPUT);
   attachInterrupt(0, hidro_leitura, CHANGE);//porta D8 do esp
   Serial.begin(115200);
 
-
-  erros_postar.attach(60 * 60, actvate_post_debug);
+  erros_postar.attach(temppostdebug, actvate_post_debug);
   //seta_hora.attach(60 * 5 , actvate_seta_hora);
 
-
   WiFiManager wifiManager;
-  wifiManager.autoConnect("hidrometro", "senha1234");
-  /*
-    WiFi.begin(ssid, password);//
-    Serial.println("conectando");
-    while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    }
-  */
-  Serial.print("conectado");
+  wifiManager.autoConnect(uuid_dispositivo);
+
+  Serial.println("conectado:");
+  Serial.println(WiFi.SSID());
+
   desconectado = false;
 
   Serial.println(WiFi.localIP());
@@ -101,12 +83,39 @@ void setup()
   //Serial.println("Imprimindo IP: " + ipStr);
   sincronizarHora();
   pushDebug(1, "Reiniciando");
+  /*
+      BEGIN OTA
+  */
+  // Port defaults to 8266
+  ArduinoOTA.setPort(8266);
 
-
+  // Hostname defaults to esp8266-[ChipID]
+  ArduinoOTA.setHostname( uuid_dispositivo );
+  ArduinoOTA.onStart([]() {
+    Serial.println("Start");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
+  /*
+     END OTA OK
+  */
 }
 
 void loop() {
-
+  ArduinoOTA.handle();
   if (setInterrupt) {
     t_criar.attach(tempjson, actvate_flag_criar_json);
     delay(200);
@@ -155,6 +164,5 @@ void loop() {
       enchendoFilaDebug = true;
     }
   }
-
 }
 
