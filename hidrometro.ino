@@ -1,9 +1,8 @@
 
-#include "Time-master\Time.h"
-#include "Time-master\TimeLib.h"
-#include "QueueList\QueueList.h"
-
+#include <Time.h>
+#include <TimeLib.h>
 #include <Ticker.h>
+#include<QueueList.h>
 #include<stdlib.h>
 #include<ESP8266HTTPClient.h>
 #include<ESP8266WiFi.h>
