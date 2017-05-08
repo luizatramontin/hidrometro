@@ -25,7 +25,7 @@ QueueList<String>filaErroConexao;
 #define aspas " "
 #define col "}"
 #define fecha   "]"
-#define tempjson 600// tempo em segundos 
+#define tempjson 600// tempo em segundos
 #define temppost 1800// tempo em segundos //com 80 carac cabem 231 jsons na fila
 #define temppostdebug 3600 // 1h para postar os erros
 
@@ -52,7 +52,7 @@ volatile bool flag_n_postou = false;
 bool setInterrupt = true;
 bool desconectado;
 bool enchendoFilaPulsos = true;
-bool enchendoFilaDebug = false;
+bool enchendoFilaDebug = true;
 bool sincroHora = false;
 
 //ip to string
@@ -165,4 +165,3 @@ void loop() {
     }
   }
 }
-

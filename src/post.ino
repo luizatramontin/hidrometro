@@ -14,7 +14,7 @@ void postar() {
   http.begin("http://api.saiot.ect.ufrn.br/api/log/hidrometro/");
   //http.begin("http://10.6.1.145/api/log/hidrometro/");
   http.addHeader("Content-Type", "application/json");
-  
+
   int httpCode = http.POST(filaPulsos.peek());//Retorna o código http, caso não conecte irá retornar -1
   String payload = http.getString();
   // Serial.print(httpCode);
@@ -51,6 +51,7 @@ void pushDebug(int code_debug, String msg) {
   Serial.print(filaErros.count());
   //  Serial.print(" - ");
   //  Serial.println(filaErros.pop());
+  postDebug();
 }
 
 void postDebug() {
@@ -86,5 +87,3 @@ String getHoraAtual() {
   }
   return payload;
 }
-
-
