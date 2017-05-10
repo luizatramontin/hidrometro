@@ -19,15 +19,21 @@ QueueList<char*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
-#define uuid_dispositivo "hidrometro_ect"
+#define uuid_dispositivo "PATRICIO0001"
 #define termino "\0"
 #define data "\"data_hora\":"
 #define aspas " "
 #define col "}"
 #define fecha   "]"
-#define tempjson 600// tempo em segundos
-#define temppost 1800// tempo em segundos //com 80 carac cabem 231 jsons na fila
-#define temppostdebug 3600 // 1h para postar os erros
+/*
+#define tempjson 1// tempo em segundos
+#define temppost 3// tempo em segundos //com 80 carac cabem 231 jsons na fila
+#define temppostdebug 5 // 1h para postar os erros
+
+*/
+#define tempjson 1// tempo em segundos
+#define temppost 3// tempo em segundos //com 80 carac cabem 231 jsons na fila
+#define temppostdebug 5 // 1h para postar os erros
 
 Ticker t_criar;
 Ticker t_postar;
@@ -40,6 +46,7 @@ volatile unsigned long last_micros;
 //filtro
 boolean state = true; //false p baixo -> pulso
 float debouncing_time = 100000;//equivale 100 milisegundos(esse tempo é em micro)
+int cont=0;
 
 char dateBuffer[12];
 char horaBuffer[12];

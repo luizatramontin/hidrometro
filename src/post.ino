@@ -6,8 +6,10 @@
 */
 void postar() {
   // Serial.println("Entrou no postar");
-  if (filaPulsos.count() <= 0 || desconectado)
+  if (filaPulsos.count() <= 0 || desconectado || cont>3){
+    cont=0;
     return;
+  }
   HTTPClient http;
   //http.begin("http://domotica-node.herokuapp.com/api/log/");
   //http.begin("http://10.7.220.210:3000/api/log/hidrometro/");
@@ -28,12 +30,16 @@ void HttpCode(int httpCode) {
     Serial.println(filaPulsos.count());
     tiraFila();
     //postar();
+    cont=0;
   }
   else {
     String msgError = "HTTP_CODE: " + String(httpCode);
     pushDebug(3, msgError);
-    // Mudar a flag enchendo para true
-    enchendoFilaPulsos = false;
+    cont++;
+    if(cont>3){
+      enchendoFilaPulsos = true;
+      enchendoFilaDebug = true;
+    }
   }
 }
 
@@ -55,8 +61,10 @@ void pushDebug(int code_debug, String msg) {
 }
 
 void postDebug() {
-  if (filaErros.count() <= 0 || desconectado)
+  if (filaErros.count() <= 0 || desconectado || cont>3){
+    cont=0;
     return;
+  }
 
   HTTPClient http;
   http.begin("http://api.saiot.ect.ufrn.br/api/log/erro/");
