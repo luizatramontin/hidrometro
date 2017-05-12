@@ -40,7 +40,7 @@ void HttpCode(int httpCode) {
       enchendoFilaPulsos = true;
       enchendoFilaDebug = true;
     //  msgError = "Excedeu a quantidade maxima de tentativas";
-    //  pushDebug(3, msgError);
+    //  pushDebug(3, msgErro);
     }
   }
 }
@@ -57,7 +57,7 @@ void pushDebug(int code_debug, String msg) {
   filaErros.push(jsonDebug);
   if(filaErros.count()>tamanhoFila){
   String mensagemdeErro = "tamanho da fila de Erros: " + String(filaErros.count());
-  pushDebug(3, mensagemdeErro);
+  pushDebug(6, mensagemdeErro);
   }
   Serial.println(jsonDebug);
   Serial.print(filaErros.count());

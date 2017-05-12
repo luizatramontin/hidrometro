@@ -37,7 +37,7 @@ void criaJson()
   filaPulsos.push(Jsaum);
   if(filaPulsos.count()>tamanhoFila){
   String mensagemError = "tamanho da fila de pulsos: " + String(filaPulsos.count());
-  pushDebug(3, mensagemError);
+  pushDebug(6, mensagemError);
   }
   Serial.print(Jsaum);
   Serial.println(filaPulsos.count());
