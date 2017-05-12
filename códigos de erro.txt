@@ -1,0 +1,7 @@
+1 - Reiniciando
+2 - 
+3 - Código HTTP diferente de 200
+4 - Reconectado
+5 - Desconectado
+6 - Tamanho da fila maior que X
+7 - X de tentativas de envio

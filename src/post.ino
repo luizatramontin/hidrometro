@@ -6,7 +6,7 @@
 */
 void postar() {
   // Serial.println("Entrou no postar");
-  if (filaPulsos.count() <= 0 || desconectado || cont>3){
+  if (filaPulsos.count() <= 0 || desconectado || cont>tentativas){
     cont=0;
     return;
   }
@@ -33,12 +33,14 @@ void HttpCode(int httpCode) {
     cont=0;
   }
   else {
-    String msgError = "HTTP_CODE: " + String(httpCode);
-    pushDebug(3, msgError);
+    String msgErro = "HTTP_CODE: " + String(httpCode);
+    pushDebug(3, msgErro);
     cont++;
-    if(cont>3){
+    if(cont>tentativas){
       enchendoFilaPulsos = true;
       enchendoFilaDebug = true;
+    //  msgError = "Excedeu a quantidade maxima de tentativas";
+    //  pushDebug(3, msgError);
     }
   }
 }
@@ -53,6 +55,10 @@ void pushDebug(int code_debug, String msg) {
   sprintf(horaBuffer, "%02u:%02u:%02u",  hour(), minute(), second());
   jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" + "}]";
   filaErros.push(jsonDebug);
+  if(filaErros.count()>tamanhoFila){
+  String mensagemdeErro = "tamanho da fila de Erros: " + String(filaErros.count());
+  pushDebug(3, mensagemdeErro);
+  }
   Serial.println(jsonDebug);
   Serial.print(filaErros.count());
   //  Serial.print(" - ");
@@ -61,7 +67,7 @@ void pushDebug(int code_debug, String msg) {
 }
 
 void postDebug() {
-  if (filaErros.count() <= 0 || desconectado || cont>3){
+  if (filaErros.count() <= 0 || desconectado || cont>tentativas){
     cont=0;
     return;
   }

@@ -33,7 +33,9 @@ QueueList<String>filaErroConexao;
 */
 #define tempjson 1// tempo em segundos
 #define temppost 3// tempo em segundos //com 80 carac cabem 231 jsons na fila
-#define temppostdebug 5 // 1h para postar os erros
+#define temppostdebug 5
+#define tentativas 3
+#define tamanhoFila 100// 1h para postar os erros
 
 Ticker t_criar;
 Ticker t_postar;

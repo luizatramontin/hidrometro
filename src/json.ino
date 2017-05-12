@@ -5,15 +5,15 @@ void criaJson()
 {
   bool cont_impar = 0;
   int valor;
-  
+
   valor=contador;
   contador = 0;
-  
+
   if (valor % 2 != 0) {
     cont_impar = true;
     valor--;
   }
-  
+
    if (cont_impar) {
     contador ++;
   }
@@ -35,6 +35,10 @@ void criaJson()
   strcat(Jsaum, termino);
   strcat(Jsaum, fecha);
   filaPulsos.push(Jsaum);
+  if(filaPulsos.count()>tamanhoFila){
+  String mensagemError = "tamanho da fila de pulsos: " + String(filaPulsos.count());
+  pushDebug(3, mensagemError);
+  }
   Serial.print(Jsaum);
   Serial.println(filaPulsos.count());
 
