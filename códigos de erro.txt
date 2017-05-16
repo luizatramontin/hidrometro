@@ -1,7 +1,11 @@
 1 - Reiniciando
-2 - 
-3 - C�digo HTTP diferente de 200
+2 -
+3 - C�digo HTTP diferente de 200
 4 - Reconectado
 5 - Desconectado
 6 - Tamanho da fila maior que X
 7 - X de tentativas de envio
+Possiveis erros:
+-Sem rede (led vermelho) - apaga após se conectar
+-sinal da rede (led verde)
+-tentando enviar dados (acende terceiro led) - apaga após envia/ pisca se n conseguir

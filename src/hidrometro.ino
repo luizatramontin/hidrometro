@@ -19,7 +19,7 @@ QueueList<char*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
-#define uuid_dispositivo "hidrometro_ect"
+#define uuid_dispositivo "PATRICIO0001"
 #define termino "\0"
 #define data "\"data_hora\":"
 #define aspas " "
@@ -31,9 +31,9 @@ QueueList<String>filaErroConexao;
 #define temppostdebug 5 // 1h para postar os erros
 
 */
-#define tempjson 600// tempo em segundos
-#define temppost 1800// tempo em segundos //com 80 carac cabem 231 jsons na fila
-#define temppostdebug 3600
+#define tempjson 1// tempo em segundos
+#define temppost 100// tempo em segundos //com 80 carac cabem 231 jsons na fila
+#define temppostdebug 10
 #define tentativas 3
 #define tamanhoFila 100// 1h para postar os erros
 
@@ -45,6 +45,9 @@ Ticker seta_hora;
 //para contagem de pulsos
 volatile unsigned int contador = 0;
 volatile unsigned long last_micros;
+unsigned long comeco = 0;
+unsigned long fim = 0;
+unsigned long tempo = 0;
 //filtro
 boolean state = true; //false p baixo -> pulso
 float debouncing_time = 100000;//equivale 100 milisegundos(esse tempo é em micro)
@@ -63,6 +66,8 @@ bool desconectado;
 bool enchendoFilaPulsos = true;
 bool enchendoFilaDebug = true;
 bool sincroHora = false;
+bool tamFilaDebug=true;
+bool tamFilaPulsos=true;
 
 //ip to string
 String ipStr;
@@ -81,6 +86,7 @@ void setup()
   wifiManager.autoConnect(uuid_dispositivo);
 
   Serial.println("conectado:");
+  Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
   desconectado = false;
@@ -91,6 +97,7 @@ void setup()
   ipStr = String(ip[0]) + String(".") + String(ip[1]) + String(".") + String(ip[2]) + String(".") + String(ip[3]);
   //Serial.println("Imprimindo IP: " + ipStr);
   sincronizarHora();
+  Serial.println(system_get_free_heap_size());
   pushDebug(1, "Reiniciando");
   /*
       BEGIN OTA
@@ -121,8 +128,10 @@ void setup()
   /*
      END OTA OK
   */
-}
+//  Serial.print("Free Memory = ");
+//  Serial.println(freeMemory());
 
+}
 void loop() {
   ArduinoOTA.handle();
   if (setInterrupt) {
@@ -172,5 +181,11 @@ void loop() {
     else {
       enchendoFilaDebug = true;
     }
+  }
+  if(filaPulsos.count()==0){
+    tamFilaPulsos=true;
+  }
+  if(filaErros.count()==0){
+    tamFilaDebug=true;
   }
 }

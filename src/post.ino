@@ -46,16 +46,23 @@ void HttpCode(int httpCode) {
 }
 
 void pushDebug(int code_debug, String msg) {
-
+  long rssi = WiFi.RSSI();
+  Serial.print("RSSI:");
+  Serial.println(rssi);
   IPAddress ip = WiFi.localIP();
   ipStr = String(ip[0]) + String(".") + String(ip[1]) + String(".") + String(ip[2]) + String(".") + String(ip[3]);
   //Serial.print("Entrou no Debug");
   String jsonDebug;
   sprintf(dateBuffer, "%04u-%02u-%02u", year(), month(), day());
   sprintf(horaBuffer, "%02u:%02u:%02u",  hour(), minute(), second());
-  jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" + "}]";
+  jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" +  ", " + "\"sinal_wifi\":" + "\""+ rssi + "\"" + "}]";
   filaErros.push(jsonDebug);
-  if(filaErros.count()>tamanhoFila){
+  comeco = micros();
+  Serial.println(system_get_free_heap_size());
+  fim = micros();
+  tempo=fim-comeco;
+  if(filaErros.count()>tamanhoFila && tamFilaDebug){
+  tamFilaDebug=false;
   String mensagemdeErro = "tamanho da fila de Erros: " + String(filaErros.count());
   pushDebug(6, mensagemdeErro);
   }
@@ -63,6 +70,8 @@ void pushDebug(int code_debug, String msg) {
   Serial.print(filaErros.count());
   //  Serial.print(" - ");
   //  Serial.println(filaErros.pop());
+  Serial.print("tempo= ");
+  Serial.println(tempo);
   postDebug();
 }
 
