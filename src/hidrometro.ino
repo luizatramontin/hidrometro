@@ -19,7 +19,7 @@ QueueList<char*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
-#define uuid_dispositivo "PATRICIO0001"
+#define uuid_dispositivo "hidrometro_ect"
 #define termino "\0"
 #define data "\"data_hora\":"
 #define aspas " "
@@ -31,9 +31,9 @@ QueueList<String>filaErroConexao;
 #define temppostdebug 5 // 1h para postar os erros
 
 */
-#define tempjson 1// tempo em segundos
-#define temppost 100// tempo em segundos //com 80 carac cabem 231 jsons na fila
-#define temppostdebug 10
+#define tempjson 600// tempo em segundos
+#define temppost 1800 // tempo em segundos //com 80 carac cabem 231 jsons na fila
+#define temppostdebug 3600
 #define tentativas 3
 #define tamanhoFila 100// 1h para postar os erros
 
