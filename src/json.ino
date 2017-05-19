@@ -35,17 +35,13 @@ void criaJson()
   strcat(Jsaum, termino);
   strcat(Jsaum, fecha);
   filaPulsos.push(Jsaum);
-  comeco = micros();
-  Serial.println(system_get_free_heap_size());
-  fim = micros();
-  tempo=fim-comeco;
-  if(filaPulsos.count()>tamanhoFila && tamFilaPulsos ){
-  tamFilaPulsos=false;
+//  Serial.println(String(system_get_free_heap_size()));
+  if(filaPulsos.count()>tamanhoFila && !filaPulsoCheia){
+  filaPulsoCheia=true;
   String mensagemError = "tamanho da fila de pulsos: " + String(filaPulsos.count());
   pushDebug(6, mensagemError);
   }
   Serial.print(Jsaum);
   Serial.println(filaPulsos.count());
-  Serial.print("tempo= ");
-  Serial.println(tempo);
+
 }

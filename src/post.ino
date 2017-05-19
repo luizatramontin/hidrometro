@@ -55,14 +55,10 @@ void pushDebug(int code_debug, String msg) {
   String jsonDebug;
   sprintf(dateBuffer, "%04u-%02u-%02u", year(), month(), day());
   sprintf(horaBuffer, "%02u:%02u:%02u",  hour(), minute(), second());
-  jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" +  ", " + "\"sinal_wifi\":" + "\""+ rssi + "\"" + "}]";
+  jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" +  ", " + "\"sinalWifi\":" + "\""+ rssi + "\"" + "}]";
   filaErros.push(jsonDebug);
-  comeco = micros();
-  Serial.println(system_get_free_heap_size());
-  fim = micros();
-  tempo=fim-comeco;
-  if(filaErros.count()>tamanhoFila && tamFilaDebug){
-  tamFilaDebug=false;
+  if(filaErros.count()>tamanhoFila && !filaDebugCheia){
+  filaDebugCheia = true;
   String mensagemdeErro = "tamanho da fila de Erros: " + String(filaErros.count());
   pushDebug(6, mensagemdeErro);
   }
@@ -70,8 +66,6 @@ void pushDebug(int code_debug, String msg) {
   Serial.print(filaErros.count());
   //  Serial.print(" - ");
   //  Serial.println(filaErros.pop());
-  Serial.print("tempo= ");
-  Serial.println(tempo);
   postDebug();
 }
 
