@@ -15,8 +15,19 @@
 #include <WiFiManager.h>
 #include <ArduinoOTA.h>
 
+class dados_pulsos{
+public:
+  int pulsos;
+  char  data_hora[26];
+  dados_pulsos(int p, char dados[]);
+};
+dados_pulsos::dados_pulsos(int p, char dados[]){
+  pulsos = p;
+  strcpy(data_hora,dados);
+}
 
-QueueList<char*> filaPulsos;
+
+QueueList<dados_pulsos*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
@@ -33,7 +44,7 @@ QueueList<String>filaErroConexao;
 
 */
 #define tempjson 1// tempo em segundos
-#define temppost 100// tempo em segundos //com 80 carac cabem 231 jsons na fila
+#define temppost 20// tempo em segundos //com 80 carac cabem 231 jsons na fila
 #define temppostdebug 150
 #define tentativas 3
 #define tamanhoFila 100// 1h para postar os erros
@@ -51,7 +62,7 @@ boolean state = true; //false p baixo -> pulso
 float debouncing_time = 100000;//equivale 100 milisegundos(esse tempo é em micro)
 int cont=0;
 
-char dateBuffer[12];
+char dateBuffer[26];
 char horaBuffer[12];
 
 //flag
@@ -158,7 +169,7 @@ void loop() {
   if (flag_criar_json)
   {
     flag_criar_json = false;
-    criaJson();
+    push_dados();
   }
   if (!enchendoFilaPulsos)
   {

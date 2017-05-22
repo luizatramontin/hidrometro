@@ -1,8 +1,9 @@
 #include <Arduino.h>
 
 
-void criaJson()
+void push_dados ()
 {
+
   bool cont_impar = 0;
   int valor;
 
@@ -17,31 +18,21 @@ void criaJson()
    if (cont_impar) {
     contador ++;
   }
-  char json[200];
-  char *Jsaum = (char *)malloc(150);
-  //Serial.println(contador);
-  sprintf(Jsaum, "[");
-  sprintf(json, "{\"serial\":\"%s\", \"pulso\":%d,", uuid_dispositivo, valor/2);
-  strcat(json, data);
-  strcat(json, "\"");
-  sprintf(dateBuffer, "%04u-%02u-%02u", year(), month(), day());
-  strcat(json, dateBuffer);
-  sprintf(horaBuffer, "%02u:%02u:%02u", hour(), minute(), second());
-  strcat(json, aspas);
-  strcat(json, horaBuffer);
-  strcat(json, "\"");
-  strcat(json, col);
-  strcat(Jsaum, json);
-  strcat(Jsaum, termino);
-  strcat(Jsaum, fecha);
-  filaPulsos.push(Jsaum);
+  sprintf(dateBuffer, "%04u-%02u-%02u %02u:%02u:%02u", year(), month(), day(), hour(), minute(), second());
+  dados_pulsos* d = new dados_pulsos(valor/2,dateBuffer);
+
+
+  filaPulsos.push(d);
 //  Serial.println(String(system_get_free_heap_size()));
   if(filaPulsos.count()>tamanhoFila && !filaPulsoCheia){
   filaPulsoCheia=true;
   String mensagemError = "tamanho da fila de pulsos: " + String(filaPulsos.count());
   pushDebug(6, mensagemError);
   }
-  Serial.print(Jsaum);
+  Serial.print("Pulsos: ");
+  Serial.println(d->pulsos);
+  Serial.print("Data_hora: ");
+  Serial.println(d->data_hora);
   Serial.println(filaPulsos.count());
 
 }
