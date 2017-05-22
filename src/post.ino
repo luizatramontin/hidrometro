@@ -71,7 +71,7 @@ void pushDebug(int code_debug, String msg) {
   String jsonDebug;
   sprintf(dateBuffer, "%04u-%02u-%02u", year(), month(), day());
   sprintf(horaBuffer, "%02u:%02u:%02u",  hour(), minute(), second());
-  jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" +  ", " + "\"sinalWifi\":" + "\""+ rssi + "\"" + "}]";
+  jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" +  ", " + "\"sinal_wifi\":" + rssi + "}]";
   filaErros.push(jsonDebug);
   if(filaErros.count()>tamanhoFila && !filaDebugCheia){
   filaDebugCheia = true;
