@@ -6,5 +6,5 @@
 void tiraFila() {
  // Serial.println("Entrou no tirarFila");
   //Serial.println(f.pop());
-  free(filaPulsos.pop());
+  delete(filaPulsos.pop());
 }
