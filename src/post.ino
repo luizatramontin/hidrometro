@@ -6,18 +6,34 @@
 */
 void postar() {
   // Serial.println("Entrou no postar");
+  char json[150];
+  char Jsaum[200];
   if (filaPulsos.count() <= 0 || desconectado || cont>tentativas){
     cont=0;
     return;
   }
+  dados_pulsos* d = filaPulsos.peek();
+
+    sprintf(Jsaum, "[");
+    sprintf(json, "{\"serial\":\"%s\", \"pulso\":%d,", uuid_dispositivo, d->pulsos);
+    strcat(json, data);
+    strcat(json, "\"");
+    strcat(json, d->data_hora);
+    strcat(json, aspas);
+    strcat(json, "\"");
+    strcat(json, col);
+    strcat(Jsaum, json);
+    strcat(Jsaum, termino);
+    strcat(Jsaum, fecha);
+  Serial.println(Jsaum);
   HTTPClient http;
   //http.begin("http://domotica-node.herokuapp.com/api/log/");
-  //http.begin("http://10.7.220.210:3000/api/log/hidrometro/");
-  http.begin("http://api.saiot.ect.ufrn.br/api/log/hidrometro/");
+//  http.begin("http://10.7.220.210:3000/api/log/hidrometro/");
+http.begin("http://api.saiot.ect.ufrn.br/api/log/hidrometro/");
   //http.begin("http://10.6.1.145/api/log/hidrometro/");
   http.addHeader("Content-Type", "application/json");
 
-  int httpCode = http.POST(filaPulsos.peek());//Retorna o código http, caso não conecte irá retornar -1
+  int httpCode = http.POST(Jsaum);//Retorna o código http, caso não conecte irá retornar -1
   String payload = http.getString();
   // Serial.print(httpCode);
   // Serial.println(payload);
