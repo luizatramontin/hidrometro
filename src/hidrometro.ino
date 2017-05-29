@@ -1,5 +1,5 @@
 /*
-   firmware correto mesmo sim agora vai e foi mesmo para o hidrometro da ect que vai ficar mesmo de verdade... Obrigado Senhor!!!
+firmware correto mesmo sim agora vai e foi mesmo para o hidrometro da ect que vai ficar mesmo de verdade... Obrigado Senhor!!!
 */
 #include <Arduino.h>
 #include <Time.h>
@@ -21,7 +21,6 @@ public:
   char  data_hora[26];
   dados_pulsos(int p, char dados[]);
 };
-
 dados_pulsos::dados_pulsos(int p, char dados[]){
   pulsos = p;
   strcpy(data_hora,dados);
@@ -32,23 +31,18 @@ QueueList<dados_pulsos*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
-#define uuid_dispositivo "PATRICIO0001"
+#define uuid_dispositivo "salarobotica_OTA"
 #define termino "\0"
 #define data "\"data_hora\":"
 #define aspas " "
 #define col "}"
 #define fecha   "]"
-/*
-#define tempjson 1// tempo em segundos
-#define temppost 3// tempo em segundos //com 80 carac cabem 231 jsons na fila
-#define temppostdebug 5 // 1h para postar os erros
-
-*/
 #define tempjson 1// tempo em segundos
 #define temppost 20// tempo em segundos //com 80 carac cabem 231 jsons na fila
 #define temppostdebug 150
 #define tentativas 3
 #define tamanhoFila 100// 1h para postar os erros
+
 
 Ticker t_criar;
 Ticker t_postar;
@@ -92,6 +86,10 @@ void setup()
   erros_postar.attach(temppostdebug, actvate_post_debug);
   //seta_hora.attach(60 * 5 , actvate_seta_hora);
 
+
+  /*
+  configuração do WiFiManager
+  */
   WiFiManager wifiManager;
   wifiManager.autoConnect(uuid_dispositivo);
 
@@ -106,14 +104,11 @@ void setup()
   IPAddress ip = WiFi.localIP();
   ipStr = String(ip[0]) + String(".") + String(ip[1]) + String(".") + String(ip[2]) + String(".") + String(ip[3]);
   //Serial.println("Imprimindo IP: " + ipStr);
-  sincronizarHora();
+  sincronizarHoraSetup();
   pushDebug(1, "Reiniciando");
 
   setupOTA(8266, uuid_dispositivo);// função para o OTA (porta,nome_dispositvo)
   ArduinoOTA.begin();
-
-//  Serial.print("Free Memory = ");
-//  Serial.println(freeMemory());
 }
 void loop() {
   ArduinoOTA.handle();
@@ -128,47 +123,42 @@ void loop() {
     sincronizarHora();
   }
   /*if (WiFi.status() != WL_CONNECTED && desconectado == false) {
-    desconectado = true;
-    pushDebug(4, "Desconectado" );
-    }
-    if (WiFi.status() == WL_CONNECTED &&  desconectado == true) {
-    desconectado = false;
-    pushDebug(4, "Conectado" );
-    }*/
+  desconectado = true;
+  pushDebug(4, "Desconectado" );
+}
+if (WiFi.status() == WL_CONNECTED &&  desconectado == true) {
+desconectado = false;
+pushDebug(4, "Conectado" );
+}*/
 
-  digitalWrite(LED_BUILTIN, state);
-  //  if (post_it)
-  //  {
-  //    postar();
-  //    post_it = false;
-  //  }
-  if (flag_criar_json)
-  {
-    flag_criar_json = false;
-    push_dados();
+digitalWrite(LED_BUILTIN, state);
+if (flag_criar_json)
+{
+  flag_criar_json = false;
+  push_dados();
+}
+if (!enchendoFilaPulsos)
+{
+  if (filaPulsos.count() > 0) {
+    postar();
   }
-  if (!enchendoFilaPulsos)
-  {
-    if (filaPulsos.count() > 0) {
-      postar();
-    }
-    else {
-      enchendoFilaPulsos = true;
-    }
+  else {
+    enchendoFilaPulsos = true;
   }
-  if (!enchendoFilaDebug)
-  {
-    if (filaErros.count() > 0) {
-      postDebug();
-    }
-    else {
-      enchendoFilaDebug = true;
-    }
+}
+if (!enchendoFilaDebug)
+{
+  if (filaErros.count() > 0) {
+    postDebug();
   }
-  if(filaPulsos.count()==0){
-    filaPulsoCheia=false;
+  else {
+    enchendoFilaDebug = true;
   }
-  if(filaErros.count()==0){
-    filaDebugCheia=false;
-  }
+}
+if(filaPulsos.count()==0){
+  filaPulsoCheia=false;
+}
+if(filaErros.count()==0){
+  filaDebugCheia=false;
+}
 }

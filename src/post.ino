@@ -103,20 +103,3 @@ void postDebug() {
     filaErros.pop();
   }
 }
-
-String getHoraAtual() {
-  HTTPClient http;
-  http.begin("http://api.saiot.ect.ufrn.br/api/log/data-hora");
-  //http.addHeader("Content-Type", "application/json");
-
-  int httpCode = http.GET(); //Retorna o código http, caso não conecte irá retornar -1
-  String payload = http.getString();
-
-  // Serial.print(httpCode);
-  Serial.println(payload);
-  http.end();
-  if (httpCode != 200) {
-    return "0";
-  }
-  return payload;
-}

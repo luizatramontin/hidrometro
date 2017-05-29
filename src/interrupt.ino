@@ -64,4 +64,3 @@ void actvate_post_debug()
 void actvate_seta_hora() {
   sincroHora = true;
 }
-

@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 
-void setupOTA(int port, char nome_dispositivo[])
+void setupOTA(int port, char* nome_dispositivo)
 {
 /*
     BEGIN OTA
