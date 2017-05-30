@@ -15,6 +15,18 @@ firmware correto mesmo sim agora vai e foi mesmo para o hidrometro da ect que va
 #include <WiFiManager.h>
 #include <ArduinoOTA.h>
 
+
+//CONSTANTE A SEREM AJUSTADAS PARA CADA GRAVACAO
+//********************************************************************
+#define uuid_dispositivo "hidrometro_ect"  //"PATRICIO0002"
+#define tempjson 60*10 //5 // tempo em segundos em que um json eh criado e colocado n fila
+#define temppost 3*tempjson // tempo em segundos em que sao enviados os jsons na fila (com 80 carac cabem 231 jsons na fila)
+#define temppostdebug 150 //O QUE EH ISSO?
+#define tentativas 3 //numero de tentativas para envio de jsons antes de desistir
+#define tamanhoFila 100// 1h para postar os erros
+#define tempatualizahora 10*60*6*6 //tempo para atualzar a datahora via servidor
+//*********************************************************************
+
 class dados_pulsos{
 public:
   int pulsos;
@@ -26,23 +38,15 @@ dados_pulsos::dados_pulsos(int p, char dados[]){
   strcpy(data_hora,dados);
 }
 
-
 QueueList<dados_pulsos*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
-#define uuid_dispositivo "PATRICIO0002"
 #define termino "\0"
 #define data "\"data_hora\":"
 #define aspas " "
 #define col "}"
 #define fecha   "]"
-#define tempjson 5// tempo em segundos
-#define temppost 20// tempo em segundos //com 80 carac cabem 231 jsons na fila
-#define temppostdebug 150
-#define tentativas 3
-#define tamanhoFila 100// 1h para postar os erros
-
 
 Ticker t_criar;
 Ticker t_postar;
@@ -96,18 +100,10 @@ Y                        Y
 ESP8266WebServer server(80);
 void setup()
 {
-  // Atribuindo urls para funções
-  server.on("/hora", HORAESP);
-  // Iniciando servidor
-  server.begin();
 
   pinMode(LED_BUILTIN, OUTPUT);
   attachInterrupt(0, hidro_leitura, CHANGE);//porta D8 do esp
   Serial.begin(115200);
-
-  erros_postar.attach(temppostdebug, actvate_post_debug);
-  seta_hora.attach(6 , actvate_seta_hora);
-
 
   /*
   configuração do WiFiManager
@@ -128,6 +124,15 @@ void setup()
   pushDebug(1, "Reiniciando");
   setupOTA(8266, uuid_dispositivo);// função para o OTA (porta,nome_dispositvo)
   ArduinoOTA.begin();
+
+  // Atribuindo urls para funções
+  server.on("/hora", HORAESP);
+  // Iniciando servidor
+  server.begin();
+
+  erros_postar.attach(temppostdebug, actvate_post_debug);
+  seta_hora.attach(tempatualizahora, actvate_seta_hora);
+
 }
 
 /*
