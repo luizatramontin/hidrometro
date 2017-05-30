@@ -31,13 +31,13 @@ QueueList<dados_pulsos*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
-#define uuid_dispositivo "salarobotica_OTA"
+#define uuid_dispositivo "PATRICIO0002"
 #define termino "\0"
 #define data "\"data_hora\":"
 #define aspas " "
 #define col "}"
 #define fecha   "]"
-#define tempjson 1// tempo em segundos
+#define tempjson 5// tempo em segundos
 #define temppost 20// tempo em segundos //com 80 carac cabem 231 jsons na fila
 #define temppostdebug 150
 #define tentativas 3
@@ -76,15 +76,37 @@ bool filaDebugCheia=false;
 //ip to string
 String ipStr;
 String statusesp;
+/*
+sSSs    sSSs  sdSS_SSSSSSbs   .S       S.    .S_sSSs
+d%%SP   d%%SP  YSSS~S%SSSSSP  .SS       SS.  .SS~YS%%b
+d%S'    d%S'         S%S       S%S       S%S  S%S   `S%b
+S%|     S%S          S%S       S%S       S%S  S%S    S%S
+S&S     S&S          S&S       S&S       S&S  S%S    d*S
+Y&Ss    S&S_Ss       S&S       S&S       S&S  S&S   .S*S
+`S&&S   S&S~SP       S&S       S&S       S&S  S&S_sdSSS
+`S*S  S&S          S&S       S&S       S&S  S&S~YSSY
+l*S  S*b          S*S       S*b       d*S  S*S
+.S*P  S*S.         S*S       S*S.     .S*S  S*S
+sSS*S    SSSbs       S*S        SSSbs_sdSSS   S*S
+YSS'      YSSP       S*S         YSSP~YSSY    S*S
+SP                       SP
+Y                        Y
 
+*/
+ESP8266WebServer server(80);
 void setup()
 {
+  // Atribuindo urls para funções
+  server.on("/hora", HORAESP);
+  // Iniciando servidor
+  server.begin();
+
   pinMode(LED_BUILTIN, OUTPUT);
   attachInterrupt(0, hidro_leitura, CHANGE);//porta D8 do esp
   Serial.begin(115200);
 
   erros_postar.attach(temppostdebug, actvate_post_debug);
-  //seta_hora.attach(60 * 5 , actvate_seta_hora);
+  seta_hora.attach(6 , actvate_seta_hora);
 
 
   /*
@@ -92,25 +114,33 @@ void setup()
   */
   WiFiManager wifiManager;
   wifiManager.autoConnect(uuid_dispositivo);
-
   Serial.println("conectado:");
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
-
   desconectado = false;
-
   Serial.println(WiFi.localIP());
-
   IPAddress ip = WiFi.localIP();
   ipStr = String(ip[0]) + String(".") + String(ip[1]) + String(".") + String(ip[2]) + String(".") + String(ip[3]);
   //Serial.println("Imprimindo IP: " + ipStr);
-  sincronizarHoraSetup();
+  do{
+    sincroHora = sincronizarHora();
+  } while (!sincroHora);
   pushDebug(1, "Reiniciando");
-
   setupOTA(8266, uuid_dispositivo);// função para o OTA (porta,nome_dispositvo)
   ArduinoOTA.begin();
 }
+
+/*
+ __        ______     ______   .______
+|  |      /  __  \   /  __  \  |   _  \
+|  |     |  |  |  | |  |  |  | |  |_)  |
+|  |     |  |  |  | |  |  |  | |   ___/
+|  `----.|  `--'  | |  `--'  | |  |
+|_______| \______/   \______/  | _|
+
+*/
 void loop() {
+  server.handleClient();
   ArduinoOTA.handle();
   if (setInterrupt) {
     t_criar.attach(tempjson, actvate_flag_criar_json);
@@ -118,47 +148,37 @@ void loop() {
     t_postar.attach(temppost, actvate_post_it);
     setInterrupt = false;
   }
-  if (sincroHora) {
-    sincroHora = false;
-    sincronizarHora();
+  if (!sincroHora) {
+    sincroHora = sincronizarHora();
   }
-  /*if (WiFi.status() != WL_CONNECTED && desconectado == false) {
-  desconectado = true;
-  pushDebug(4, "Desconectado" );
-}
-if (WiFi.status() == WL_CONNECTED &&  desconectado == true) {
-desconectado = false;
-pushDebug(4, "Conectado" );
-}*/
-
-digitalWrite(LED_BUILTIN, state);
-if (flag_criar_json)
-{
-  flag_criar_json = false;
-  push_dados();
-}
-if (!enchendoFilaPulsos)
-{
-  if (filaPulsos.count() > 0) {
-    postar();
+  digitalWrite(LED_BUILTIN, state);
+  if (flag_criar_json)
+  {
+    flag_criar_json = false;
+    push_dados();
   }
-  else {
-    enchendoFilaPulsos = true;
+  if (!enchendoFilaPulsos)
+  {
+    if (filaPulsos.count() > 0) {
+      postar();
+    }
+    else {
+      enchendoFilaPulsos = true;
+    }
   }
-}
-if (!enchendoFilaDebug)
-{
-  if (filaErros.count() > 0) {
-    postDebug();
+  if (!enchendoFilaDebug)
+  {
+    if (filaErros.count() > 0) {
+      postDebug();
+    }
+    else {
+      enchendoFilaDebug = true;
+    }
   }
-  else {
-    enchendoFilaDebug = true;
+  if(filaPulsos.count()==0){
+    filaPulsoCheia=false;
   }
-}
-if(filaPulsos.count()==0){
-  filaPulsoCheia=false;
-}
-if(filaErros.count()==0){
-  filaDebugCheia=false;
-}
+  if(filaErros.count()==0){
+    filaDebugCheia=false;
+  }
 }

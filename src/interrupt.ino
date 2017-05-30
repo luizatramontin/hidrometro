@@ -1,8 +1,6 @@
 #include <Arduino.h>
 
-
-void hidro_leitura() {
-
+void hidro_leitura(){
   // if (abs(micros() - last_micros) >= debouncing_time && state ^ digitalRead(D3) ) {
   if (state ^ digitalRead(D3)) {
     if (abs(micros() - last_micros) >= debouncing_time ) {
@@ -19,18 +17,13 @@ void hidro_leitura() {
   else {
     Serial.println("Filtro de interferencia");
   }
-
-
 }
 
-
-void actvate_flag_criar_json()
-{
+void actvate_flag_criar_json(){
   flag_criar_json = true;
 }
 
-void actvate_post_it()
-{
+void actvate_post_it(){
   //  post_it = true;
   if (WiFi.status() == WL_CONNECTED) {
     enchendoFilaPulsos = false;
@@ -46,8 +39,8 @@ void actvate_post_it()
   }
 
 }
-void actvate_post_debug()
-{
+
+void actvate_post_debug(){
   if (WiFi.status() == WL_CONNECTED) {
     enchendoFilaDebug = false;
     if (desconectado) {
@@ -61,6 +54,7 @@ void actvate_post_debug()
     }
   }
 }
-void actvate_seta_hora() {
-  sincroHora = true;
+
+void actvate_seta_hora(){
+  sincroHora = false;
 }
