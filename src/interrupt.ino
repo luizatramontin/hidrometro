@@ -37,7 +37,6 @@ void actvate_post_it(){
       desconectado = true;
     }
   }
-
 }
 
 void actvate_post_debug(){

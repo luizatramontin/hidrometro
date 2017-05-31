@@ -2,7 +2,7 @@
 
 
 /*
-  funções usadas para postar e gerenciar os posts
+funções usadas para postar e gerenciar os posts
 */
 void postar() {
   // Serial.println("Entrou no postar");
@@ -14,23 +14,21 @@ void postar() {
   }
   dados_pulsos* d = filaPulsos.peek();
 
-    sprintf(Jsaum, "[");
-    sprintf(json, "{\"serial\":\"%s\", \"pulso\":%d,", uuid_dispositivo, d->pulsos);
-    strcat(json, data);
-    strcat(json, "\"");
-    strcat(json, d->data_hora);
-    strcat(json, aspas);
-    strcat(json, "\"");
-    strcat(json, col);
-    strcat(Jsaum, json);
-    strcat(Jsaum, termino);
-    strcat(Jsaum, fecha);
+  sprintf(Jsaum, "[");
+  sprintf(json, "{\"serial\":\"%s\", \"pulso\":%d,", uuid_dispositivo, d->pulsos);
+  strcat(json, data);
+  strcat(json, "\"");
+  strcat(json, d->data_hora);
+  strcat(json, aspas);
+  strcat(json, "\"");
+  strcat(json, col);
+  strcat(Jsaum, json);
+  strcat(Jsaum, termino);
+  strcat(Jsaum, fecha);
   Serial.println(Jsaum);
   HTTPClient http;
-  //http.begin("http://domotica-node.herokuapp.com/api/log/");
-//  http.begin("http://10.7.220.210:3000/api/log/hidrometro/");
-http.begin("http://api.saiot.ect.ufrn.br/api/log/hidrometro/");
-  //http.begin("http://10.6.1.145/api/log/hidrometro/");
+  http.begin(LOGCONTAGEM);
+
   http.addHeader("Content-Type", "application/json");
 
   int httpCode = http.POST(Jsaum);//Retorna o código http, caso não conecte irá retornar -1
@@ -42,8 +40,11 @@ http.begin("http://api.saiot.ect.ufrn.br/api/log/hidrometro/");
 }
 
 void HttpCode(int httpCode) {
+  dados_pulsos* d = filaPulsos.peek();
   if (httpCode == 200) {
     Serial.println(filaPulsos.count());
+    contador = contador -  d->pulsos * 2 ;
+    ultimo_contador = contador -  d->pulsos * 2 ;
     tiraFila();
     //postar();
     cont=0;
@@ -55,8 +56,8 @@ void HttpCode(int httpCode) {
     if(cont>tentativas){
       enchendoFilaPulsos = true;
       enchendoFilaDebug = true;
-    //  msgError = "Excedeu a quantidade maxima de tentativas";
-    //  pushDebug(3, msgErro);
+      //  msgError = "Excedeu a quantidade maxima de tentativas";
+      //  pushDebug(3, msgErro);
     }
   }
 }
@@ -74,9 +75,9 @@ void pushDebug(int code_debug, String msg) {
   jsonDebug = "[{\"cod_erro\": " + String(code_debug) + " ,\"serial\": \"" + uuid_dispositivo + "\", \"mensagem\":" + "\"" + msg + "\"" + ", " + data + "\"" + String(dateBuffer) + " " +  String(horaBuffer) + "\"" + ", " + "\"ip\":" + "\"" + ipStr + "\"" +  ", " + "\"sinal_wifi\":" + rssi + "}]";
   filaErros.push(jsonDebug);
   if(filaErros.count()>tamanhoFila && !filaDebugCheia){
-  filaDebugCheia = true;
-  String mensagemdeErro = "tamanho da fila de Erros: " + String(filaErros.count());
-  pushDebug(6, mensagemdeErro);
+    filaDebugCheia = true;
+    String mensagemdeErro = "tamanho da fila de Erros: " + String(filaErros.count());
+    pushDebug(6, mensagemdeErro);
   }
   Serial.println(jsonDebug);
   Serial.print(filaErros.count());
@@ -92,7 +93,7 @@ void postDebug() {
   }
 
   HTTPClient http;
-  http.begin("http://api.saiot.ect.ufrn.br/api/log/erro/");
+  http.begin(LOGERRO);
   http.addHeader("Content-Type", "application/json");
   int httpCode = http.POST(filaErros.peek());//Retorna o código http, caso não conecte irá retornar -1
   String payload = http.getString();

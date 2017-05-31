@@ -1,4 +1,4 @@
-void HORAESP(){
+void dataHora(){
   /*
   Retorna a hora do sistema do ESP
   */
@@ -8,7 +8,7 @@ void HORAESP(){
   html += "</title>";
   html += "<style>body { background-color: #cccccc; ";
   html += "font-family: Arial, Helvetica, Sans-Serif; ";
-  html += "Color: #000088; }</style>";
+  html += "Color: #005356; }</style>";
   html += "</head><body>";
   html += "<h1>HORA DO ";
   html += uuid_dispositivo;
@@ -30,25 +30,32 @@ void HORAESP(){
   server.send(200, "text/html", html);
 }
 
-void estatos(){
+void dataHoraSinc(){
+  /*
+  sincroniza e retorna a hora do sistema do ESP
+  */
+  sincronizarHora();
+  dataHora();
+}
+
+void estado(){
   /*
   Retorna o status do sistema
   data-hora
   janela de amostragem
   tempo de postar
   tempo de sincronizarHora
-
   */
 }
 
-void reiniciar(/* arguments */) {
+void reinicio(/* arguments */) {
   /*
   reinicia o ESP
   */
   //ESP.
 }
 
-void setaParametros(/* arguments */) {
+void configuracao(/* arguments */) {
   /*
   seta parametros de tempo
   */

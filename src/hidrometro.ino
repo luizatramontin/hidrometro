@@ -1,6 +1,3 @@
-/*
-firmware correto mesmo sim agora vai e foi mesmo para o hidrometro da ect que vai ficar mesmo de verdade... Obrigado Senhor!!!
-*/
 #include <Arduino.h>
 #include <Time.h>
 #include <TimeLib.h>
@@ -14,18 +11,32 @@ firmware correto mesmo sim agora vai e foi mesmo para o hidrometro da ect que va
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 #include <ArduinoOTA.h>
+#include <EEPROM.h>
 
 
 //CONSTANTE A SEREM AJUSTADAS PARA CADA GRAVACAO
 //********************************************************************
-#define uuid_dispositivo "hidrometro_ect"  //"PATRICIO0002"
+#define uuid_dispositivo "PATRICIO0002"  //"PATRICIO0002"
 #define tempjson 60*10 //5 // tempo em segundos em que um json eh criado e colocado n fila
 #define temppost 3*tempjson // tempo em segundos em que sao enviados os jsons na fila (com 80 carac cabem 231 jsons na fila)
-#define temppostdebug 150 //O QUE EH ISSO?
+#define temppostdebug 150 // tempo em segundos em que sao enviados os jsons com os erros
 #define tentativas 3 //numero de tentativas para envio de jsons antes de desistir
-#define tamanhoFila 100// 1h para postar os erros
+#define tamanhoFila 100// 1h para postar os erros  ???????????????????????????????
 #define tempatualizahora 10*60*6*6 //tempo para atualzar a datahora via servidor
+#define sinchora true //usada para debugar a API se false desabilita todas as funções de ajustar hora automaticamente.
+// ip do raspberry do lab para teste de segurança
+// para usar o servidor ect usar o endereco a baixo no lugar dos numeros
+// http://api.saiot.ect.ufrn.br
+
+#define GETDATAHORA "https://10.7.226.85:81/api/log/data-hora"
+#define LOGCONTAGEM "https://10.7.226.85:81/api/log/hidrometro/"
+#define LOGERRO "https://10.7.226.85:81/api/log/erro/"
 //*********************************************************************
+#define termino "\0"
+#define data "\"data_hora\":"
+#define aspas " "
+#define col "}"
+#define fecha "]"
 
 class dados_pulsos{
 public:
@@ -42,12 +53,7 @@ QueueList<dados_pulsos*> filaPulsos;
 QueueList<String> filaErros;
 QueueList<String>filaErroConexao;
 
-#define termino "\0"
-#define data "\"data_hora\":"
-#define aspas " "
-#define col "}"
-#define fecha   "]"
-
+//INTERRUPÇÕES
 Ticker t_criar;
 Ticker t_postar;
 Ticker erros_postar;
@@ -56,6 +62,11 @@ Ticker seta_hora;
 //para contagem de pulsos
 volatile unsigned int contador = 0;
 volatile unsigned long last_micros;
+volatile unsigned int ultimo_contador = 0; //usado para gravar na memoria
+
+//variaveis para uso da EEPROM
+int addr = 0;
+
 //filtro
 boolean state = true; //false p baixo -> pulso
 float debouncing_time = 100000;//equivale 100 milisegundos(esse tempo é em micro)
@@ -77,33 +88,51 @@ bool sincroHora = false;
 bool filaPulsoCheia=false;
 bool filaDebugCheia=false;
 
+ESP8266WebServer server(80);
 //ip to string
 String ipStr;
 String statusesp;
 /*
-sSSs    sSSs  sdSS_SSSSSSbs   .S       S.    .S_sSSs
-d%%SP   d%%SP  YSSS~S%SSSSSP  .SS       SS.  .SS~YS%%b
-d%S'    d%S'         S%S       S%S       S%S  S%S   `S%b
-S%|     S%S          S%S       S%S       S%S  S%S    S%S
-S&S     S&S          S&S       S&S       S&S  S%S    d*S
-Y&Ss    S&S_Ss       S&S       S&S       S&S  S&S   .S*S
-`S&&S   S&S~SP       S&S       S&S       S&S  S&S_sdSSS
-`S*S  S&S          S&S       S&S       S&S  S&S~YSSY
-l*S  S*b          S*S       S*b       d*S  S*S
-.S*P  S*S.         S*S       S*S.     .S*S  S*S
-sSS*S    SSSbs       S*S        SSSbs_sdSSS   S*S
-YSS'      YSSP       S*S         YSSP~YSSY    S*S
-SP                       SP
-Y                        Y
-
+                                              tttt
+                                           ttt:::t
+                                           t:::::t
+                                           t:::::t
+    ssssssssss       eeeeeeeeeeee    ttttttt:::::ttttttt    uuuuuu    uuuuuu ppppp   ppppppppp
+  ss::::::::::s    ee::::::::::::ee  t:::::::::::::::::t    u::::u    u::::u p::::ppp:::::::::p
+ss:::::::::::::s  e::::::eeeee:::::eet:::::::::::::::::t    u::::u    u::::u p:::::::::::::::::p
+s::::::ssss:::::se::::::e     e:::::etttttt:::::::tttttt    u::::u    u::::u pp::::::ppppp::::::p
+ s:::::s  ssssss e:::::::eeeee::::::e      t:::::t          u::::u    u::::u  p:::::p     p:::::p
+   s::::::s      e:::::::::::::::::e       t:::::t          u::::u    u::::u  p:::::p     p:::::p
+      s::::::s   e::::::eeeeeeeeeee        t:::::t          u::::u    u::::u  p:::::p     p:::::p
+ssssss   s:::::s e:::::::e                 t:::::t    ttttttu:::::uuuu:::::u  p:::::p    p::::::p
+s:::::ssss::::::se::::::::e                t::::::tttt:::::tu:::::::::::::::uup:::::ppppp:::::::p
+s::::::::::::::s  e::::::::eeeeeeee        tt::::::::::::::t u:::::::::::::::up::::::::::::::::p
+ s:::::::::::ss    ee:::::::::::::e          tt:::::::::::tt  uu::::::::uu:::up::::::::::::::pp
+  sssssssssss        eeeeeeeeeeeeee            ttttttttttt      uuuuuuuu  uuuup::::::pppppppp
+                                                                              p:::::p
+                                                                              p:::::p
+                                                                             p:::::::p
+                                                                             p:::::::p
+                                                                             p:::::::p
+                                                                             ppppppppp
 */
-ESP8266WebServer server(80);
-void setup()
-{
-
+void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
-  attachInterrupt(0, hidro_leitura, CHANGE);//porta D8 do esp
+  pinMode(D5,INPUT_PULLUP); //usado para gravação na memoria
+
+  attachInterrupt(D3, hidro_leitura, CHANGE);
+
   Serial.begin(115200);
+
+//usado para gravação na memoria
+  EEPROM.begin(10);
+  if(digitalRead(D5) == LOW){
+    EEPROM.put(addr,ultimo_contador);
+    EEPROM.commit();
+  }
+  EEPROM.get(addr,contador);
+  Serial.print("Valor inicial: ");
+  Serial.println(contador);
 
   /*
   configuração do WiFiManager
@@ -117,18 +146,27 @@ void setup()
   Serial.println(WiFi.localIP());
   IPAddress ip = WiFi.localIP();
   ipStr = String(ip[0]) + String(".") + String(ip[1]) + String(".") + String(ip[2]) + String(".") + String(ip[3]);
-  //Serial.println("Imprimindo IP: " + ipStr);
-  do{
-    sincroHora = sincronizarHora();
-  } while (!sincroHora);
+
+  if (sinchora) {
+    do{
+      sincroHora = sincronizarHora();
+    } while (!sincroHora);
+  }
   pushDebug(1, "Reiniciando");
   setupOTA(8266, uuid_dispositivo);// função para o OTA (porta,nome_dispositvo)
   ArduinoOTA.begin();
 
+  //CONFIGURAÇÃO DO SERVIDOR
+  //********************************************************************
   // Atribuindo urls para funções
-  server.on("/hora", HORAESP);
+  server.on("/data-hora", dataHora);
+  server.on("/data-hora/sinc", dataHoraSinc);
+  server.on("/estado", estado);
+  server.on("/reinicio", reinicio);
+  server.on("/configuracao", configuracao);
   // Iniciando servidor
   server.begin();
+  //********************************************************************
 
   erros_postar.attach(temppostdebug, actvate_post_debug);
   seta_hora.attach(tempatualizahora, actvate_seta_hora);
@@ -136,13 +174,28 @@ void setup()
 }
 
 /*
- __        ______     ______   .______
-|  |      /  __  \   /  __  \  |   _  \
-|  |     |  |  |  | |  |  |  | |  |_)  |
-|  |     |  |  |  | |  |  |  | |   ___/
-|  `----.|  `--'  | |  `--'  | |  |
-|_______| \______/   \______/  | _|
-
+lllllll
+l:::::l
+l:::::l
+l:::::l
+ l::::l    ooooooooooo      ooooooooooo   ppppp   ppppppppp
+ l::::l  oo:::::::::::oo  oo:::::::::::oo p::::ppp:::::::::p
+ l::::l o:::::::::::::::oo:::::::::::::::op:::::::::::::::::p
+ l::::l o:::::ooooo:::::oo:::::ooooo:::::opp::::::ppppp::::::p
+ l::::l o::::o     o::::oo::::o     o::::o p:::::p     p:::::p
+ l::::l o::::o     o::::oo::::o     o::::o p:::::p     p:::::p
+ l::::l o::::o     o::::oo::::o     o::::o p:::::p     p:::::p
+ l::::l o::::o     o::::oo::::o     o::::o p:::::p    p::::::p
+l::::::lo:::::ooooo:::::oo:::::ooooo:::::o p:::::ppppp:::::::p
+l::::::lo:::::::::::::::oo:::::::::::::::o p::::::::::::::::p
+l::::::l oo:::::::::::oo  oo:::::::::::oo  p::::::::::::::pp
+llllllll   ooooooooooo      ooooooooooo    p::::::pppppppp
+                                           p:::::p
+                                           p:::::p
+                                          p:::::::p
+                                          p:::::::p
+                                          p:::::::p
+                                          ppppppppp
 */
 void loop() {
   server.handleClient();
@@ -153,8 +206,10 @@ void loop() {
     t_postar.attach(temppost, actvate_post_it);
     setInterrupt = false;
   }
-  if (!sincroHora) {
-    sincroHora = sincronizarHora();
+  if (sinchora) {
+    if (!sincroHora) {
+      sincroHora = sincronizarHora();
+    }
   }
   digitalWrite(LED_BUILTIN, state);
   if (flag_criar_json)

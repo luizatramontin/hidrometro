@@ -1,7 +1,7 @@
 #include <Arduino.h>
 String getHoraAtual() {
   HTTPClient http;
-  http.begin("http://api.saiot.ect.ufrn.br/api/log/data-hora");
+  http.begin(GETDATAHORA);
   //http.addHeader("Content-Type", "application/json");
   int httpCode = http.GET(); //Retorna o código http, caso não conecte irá retornar -1
   String payload = http.getString();
