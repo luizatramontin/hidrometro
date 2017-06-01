@@ -1,3 +1,4 @@
+#include <Arduino.h>
 void dataHora(){
   /*
   Retorna a hora do sistema do ESP

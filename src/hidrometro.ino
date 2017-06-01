@@ -124,7 +124,7 @@ void setup() {
 
   Serial.begin(115200);
 
-//usado para gravação na memoria
+  //usado para gravação na memoria
   EEPROM.begin(10);
   if(digitalRead(D5) == LOW){
     EEPROM.put(addr,ultimo_contador);

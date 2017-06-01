@@ -19,8 +19,8 @@ bool sincronizarHora() {
   Serial.println("sincronizarHora: ");
   Serial.println(dataAtual);
   if (dataAtual == "0"){
-   return false;
- }
+    return false;
+  }
   ano = dataAtual.substring(1, 5).toInt();
   mes = dataAtual.substring(6, 8).toInt();
   dia = dataAtual.substring(9, 11).toInt();
