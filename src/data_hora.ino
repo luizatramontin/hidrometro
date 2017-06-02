@@ -5,9 +5,10 @@ String getHoraAtual() {
   //http.addHeader("Content-Type", "application/json");
   int httpCode = http.GET(); //Retorna o código http, caso não conecte irá retornar -1
   String payload = http.getString();
+  http.end();
   Serial.println("getHoraAtual: ");
   Serial.println(payload);
-  http.end();
+
   if (httpCode != 200) {
     return "0";
   }

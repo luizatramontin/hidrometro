@@ -16,21 +16,21 @@
 
 //CONSTANTE A SEREM AJUSTADAS PARA CADA GRAVACAO
 //********************************************************************
-#define uuid_dispositivo "PATRICIO0002"  //"PATRICIO0002"
-#define tempjson 60*10 //5 // tempo em segundos em que um json eh criado e colocado n fila
-#define temppost 3*tempjson // tempo em segundos em que sao enviados os jsons na fila (com 80 carac cabem 231 jsons na fila)
+#define uuid_dispositivo "salarobotica_OTA"//PATRICIO0002
+#define tempjson 600 //10min  tempo em segundos em que um json eh criado e colocado n fila
+#define temppost 1800 // 30min tempo em segundos em que sao enviados os jsons na fila (com 80 carac cabem 231 jsons na fila)
 #define temppostdebug 150 // tempo em segundos em que sao enviados os jsons com os erros
 #define tentativas 3 //numero de tentativas para envio de jsons antes de desistir
 #define tamanhoFila 100// 1h para postar os erros  ???????????????????????????????
-#define tempatualizahora 10*60*6*6 //tempo para atualzar a datahora via servidor
+#define tempatualizahora 2160 //6h tempo para atualzar a datahora via servidor
 #define sinchora true //usada para debugar a API se false desabilita todas as funções de ajustar hora automaticamente.
 // ip do raspberry do lab para teste de segurança
 // para usar o servidor ect usar o endereco a baixo no lugar dos numeros
 // http://api.saiot.ect.ufrn.br
-
-#define GETDATAHORA "https://10.7.226.85:81/api/log/data-hora"
-#define LOGCONTAGEM "https://10.7.226.85:81/api/log/hidrometro/"
-#define LOGERRO "https://10.7.226.85:81/api/log/erro/"
+//https://10.7.226.85:81
+#define GETDATAHORA "http://api.saiot.ect.ufrn.br/api/log/data-hora"
+#define LOGCONTAGEM "http://api.saiot.ect.ufrn.br/api/log/hidrometro/"
+#define LOGERRO "http://api.saiot.ect.ufrn.br/api/log/erro/"
 //*********************************************************************
 #define termino "\0"
 #define data "\"data_hora\":"
@@ -114,8 +114,7 @@ s::::::::::::::s  e::::::::eeeeeeee        tt::::::::::::::t u:::::::::::::::up:
                                                                              p:::::::p
                                                                              p:::::::p
                                                                              p:::::::p
-                                                                             ppppppppp
-*/
+                                                                             ppppppppp*/
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(D5,INPUT_PULLUP); //usado para gravação na memoria
@@ -150,6 +149,7 @@ void setup() {
   if (sinchora) {
     do{
       sincroHora = sincronizarHora();
+      delay(10);//tempo necessário para aguardar o fechamento da conexão
     } while (!sincroHora);
   }
   pushDebug(1, "Reiniciando");
@@ -195,8 +195,7 @@ llllllll   ooooooooooo      ooooooooooo    p::::::pppppppp
                                           p:::::::p
                                           p:::::::p
                                           p:::::::p
-                                          ppppppppp
-*/
+                                          ppppppppp*/
 void loop() {
   server.handleClient();
   ArduinoOTA.handle();
