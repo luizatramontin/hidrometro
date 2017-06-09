@@ -57,3 +57,7 @@ void actvate_post_debug(){
 void actvate_seta_hora(){
   sincroHora = false;
 }
+void actvate_push_flash(){
+  EEPROM.put(addr,contador);
+  EEPROM.commit();
+}

@@ -6,28 +6,14 @@ void push_dados ()
 {
 
   bool cont_impar = 0;
-  int valor;
+  int valor = 0;
   valor = contador - ultimo_contador;
   ultimo_contador = contador;
 
 
-  EEPROM.put(addr,contador);
-  EEPROM.commit();
-
   if (valor % 2 != 0) {
     valor--;
     ultimo_contador--;
-  }
-  valor=contador;
-  contador = 0;
-
-  if (valor % 2 != 0) {
-    cont_impar = true;
-    valor--;
-  }
-
-   if (cont_impar) {
-    contador ++;
   }
   sprintf(dateBuffer, "%04u-%02u-%02u %02u:%02u:%02u", year(), month(), day(), hour(), minute(), second());
   dados_pulsos* d = new dados_pulsos(valor/2,dateBuffer);

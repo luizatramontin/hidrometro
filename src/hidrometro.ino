@@ -16,12 +16,13 @@
 
 //CONSTANTE A SEREM AJUSTADAS PARA CADA GRAVACAO
 //********************************************************************
-#define uuid_dispositivo "salarobotica_OTA"//PATRICIO0002
-#define tempjson 600 //10min  tempo em segundos em que um json eh criado e colocado n fila
-#define temppost 1800 // 30min tempo em segundos em que sao enviados os jsons na fila (com 80 carac cabem 231 jsons na fila)
-#define temppostdebug 150 // tempo em segundos em que sao enviados os jsons com os erros
+#define uuid_dispositivo "salarobotica_OTA"
+#define tempjson 40//10min  tempo em segundos em que um json eh criado e colocado n fila
+#define temppost 120 // 30min tempo em segundos em que sao enviados os jsons na fila (com 80 carac cabem 231 jsons na fila)
+#define temppostdebug 100 // tempo em segundos em que sao enviados os jsons com os erros
+#define temp_push_flash 300 // inserir o valor do contador na flash a cada X minutos
 #define tentativas 3 //numero de tentativas para envio de jsons antes de desistir
-#define tamanhoFila 100// 1h para postar os erros  ???????????????????????????????
+#define tamanhoFila 250// 1h para postar os erros  ???????????????????????????????
 #define tempatualizahora 2160 //6h tempo para atualzar a datahora via servidor
 #define sinchora true //usada para debugar a API se false desabilita todas as funções de ajustar hora automaticamente.
 // ip do raspberry do lab para teste de segurança
@@ -57,6 +58,7 @@ QueueList<String>filaErroConexao;
 Ticker t_criar;
 Ticker t_postar;
 Ticker erros_postar;
+Ticker push_flash;
 Ticker seta_hora;
 
 //para contagem de pulsos
@@ -170,6 +172,7 @@ void setup() {
 
   erros_postar.attach(temppostdebug, actvate_post_debug);
   seta_hora.attach(tempatualizahora, actvate_seta_hora);
+  push_flash.attach(temp_push_flash, actvate_push_flash);
 
 }
 

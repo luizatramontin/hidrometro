@@ -7,14 +7,14 @@ funções usadas para postar e gerenciar os posts
 void postar() {
   // Serial.println("Entrou no postar");
   char json[150];
-  char Jsaum[200];
+  char big_json[200];
   if (filaPulsos.count() <= 0 || desconectado || cont>tentativas){
     cont=0;
     return;
   }
   dados_pulsos* d = filaPulsos.peek();
 
-  sprintf(Jsaum, "[");
+  sprintf(big_json, "[");
   sprintf(json, "{\"serial\":\"%s\", \"pulso\":%d,", uuid_dispositivo, d->pulsos);
   strcat(json, data);
   strcat(json, "\"");
@@ -22,16 +22,16 @@ void postar() {
   strcat(json, aspas);
   strcat(json, "\"");
   strcat(json, col);
-  strcat(Jsaum, json);
-  strcat(Jsaum, termino);
-  strcat(Jsaum, fecha);
-  Serial.println(Jsaum);
+  strcat(big_json, json);
+  strcat(big_json, termino);
+  strcat(big_json, fecha);
+  Serial.println(big_json);
   HTTPClient http;
   http.begin(LOGCONTAGEM);
 
   http.addHeader("Content-Type", "application/json");
 
-  int httpCode = http.POST(Jsaum);//Retorna o código http, caso não conecte irá retornar -1
+  int httpCode = http.POST(big_json);//Retorna o código http, caso não conecte irá retornar -1
   String payload = http.getString();
   // Serial.print(httpCode);
   // Serial.println(payload);
@@ -44,7 +44,7 @@ void HttpCode(int httpCode) {
   if (httpCode == 200) {
     Serial.println(filaPulsos.count());
     contador = contador -  d->pulsos * 2 ;
-    ultimo_contador = contador -  d->pulsos * 2 ;
+    ultimo_contador = ultimo_contador -  d->pulsos * 2 ;
     tiraFila();
     //postar();
     cont=0;
