@@ -17,13 +17,13 @@
 //CONSTANTE A SEREM AJUSTADAS PARA CADA GRAVACAO
 //********************************************************************
 #define uuid_dispositivo "salarobotica_OTA"
-#define tempjson 40//10min  tempo em segundos em que um json eh criado e colocado n fila
-#define temppost 120 // 30min tempo em segundos em que sao enviados os jsons na fila (com 80 carac cabem 231 jsons na fila)
+#define tempjson 10*60//10min  tempo em segundos em que um json eh criado e colocado n fila
+#define temppost 3*10*60 // 30min tempo em segundos em que sao enviados os jsons na fila (com 80 carac cabem 231 jsons na fila)
 #define temppostdebug 100 // tempo em segundos em que sao enviados os jsons com os erros
-#define temp_push_flash 300 // inserir o valor do contador na flash a cada X minutos
+#define temp_push_flash 5*60 // inserir o valor do contador na flash a cada X minutos
 #define tentativas 3 //numero de tentativas para envio de jsons antes de desistir
 #define tamanhoFila 250// 1h para postar os erros  ???????????????????????????????
-#define tempatualizahora 2160 //6h tempo para atualzar a datahora via servidor
+#define tempatualizahora 6*60*60 //6h tempo para atualzar a datahora via servidor
 #define sinchora true //usada para debugar a API se false desabilita todas as funções de ajustar hora automaticamente.
 // ip do raspberry do lab para teste de segurança
 // para usar o servidor ect usar o endereco a baixo no lugar dos numeros
@@ -121,7 +121,11 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(D5,INPUT_PULLUP); //usado para gravação na memoria
 
+  //interrupcao externa do contador de pulsos
   attachInterrupt(D3, hidro_leitura, CHANGE);
+
+  //interrupcao por tempo para gravar na flash
+  push_flash.attach(temp_push_flash, actvate_push_flash);
 
   Serial.begin(115200);
 
@@ -172,7 +176,7 @@ void setup() {
 
   erros_postar.attach(temppostdebug, actvate_post_debug);
   seta_hora.attach(tempatualizahora, actvate_seta_hora);
-  push_flash.attach(temp_push_flash, actvate_push_flash);
+
 
 }
 
@@ -208,9 +212,10 @@ void loop() {
     t_postar.attach(temppost, actvate_post_it);
     setInterrupt = false;
   }
-  if (sinchora) {
+  if (sinchora ) {
     if (!sincroHora) {
-      sincroHora = sincronizarHora();
+      sincroHora = true;
+      sincronizarHora();
     }
   }
   digitalWrite(LED_BUILTIN, state);
