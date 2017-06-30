@@ -7,5 +7,4 @@
 7 - X de tentativas de envio
 Possiveis erros:
 -Sem rede (led vermelho) - apaga após se conectar
--sinal da rede (led verde)
--tentando enviar dados (acende terceiro led) - apaga após envia/ pisca se n conseguir
+-tentando enviar dados (acende terceiro led verde) - apaga após envia/ acende um 4(azul) se n conseguir
